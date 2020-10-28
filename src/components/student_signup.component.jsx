@@ -15,102 +15,18 @@ import Copyright from "../constants/copyright";
 import { CircularProgress } from "@material-ui/core";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CheckIcon from "@material-ui/icons/Check";
+import { green } from "@material-ui/core/colors";
 
 import { validateEmail } from "../modules/validateEmail";
 import { teacherGuardianList } from "../api/teacher_guardian_list";
 import { studentSignUp } from "../api/student_signup";
-
-const hostels = [
-  {
-    value: "1",
-    label: "Hostel 1",
-  },
-  {
-    value: "2",
-    label: "Hostel 2",
-  },
-  {
-    value: "3",
-    label: "Hostel 3",
-  },
-  {
-    value: "4",
-    label: "Hostel 4",
-  },
-];
-
-const years = [
-  {
-    value: "1",
-    label: "1st Year",
-  },
-  {
-    value: "2",
-    label: "2nd Year",
-  },
-  {
-    value: "3",
-    label: "3rd Year",
-  },
-  {
-    value: "4",
-    label: "4th Year",
-  },
-];
-
-const departments = [
-  {
-    value: "cse",
-    label: "CSE",
-  },
-  {
-    value: "ece",
-    label: "ECE",
-  },
-  {
-    value: "civil",
-    label: "CIVIL",
-  },
-  {
-    value: "mechanical",
-    label: "Mechanical",
-  },
-  {
-    value: "it",
-    label: "IT",
-  },
-];
-
-const levels = [
-  {
-    value: "0",
-    label: "Level 0",
-  },
-  {
-    value: "1",
-    label: "Level 1",
-  },
-  {
-    value: "2",
-    label: "Level 2",
-  },
-  {
-    value: "3",
-    label: "Level 3",
-  },
-  {
-    value: "4",
-    label: "Level 4",
-  },
-  {
-    value: "5",
-    label: "Level 5",
-  },
-  {
-    value: "6",
-    label: "Level 6",
-  },
-];
+import {
+  hostels,
+  years,
+  departments,
+  levels,
+} from "../modules/student_signup_select_options";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -136,11 +52,23 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     height: "100vh",
   },
+  successDiv: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+    textAlign: "center",
+  },
+  successIcon: {
+    color: green[500],
+    fontSize: 80,
+  },
 }));
 
 export default function StudentSignup() {
   const classes = useStyles();
   const notify = (message) => toast(message);
+  const [signUpSuccessful, setSignupSuccessful] = useState(false);
   const [loading, setLoading] = useState(true);
   const [teacher_guardians, setTg] = useState([]);
   const [name, setName] = useState("");
@@ -185,6 +113,7 @@ export default function StudentSignup() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
     const user = {
       name: name,
       phone: phone,
@@ -200,15 +129,14 @@ export default function StudentSignup() {
       department: department.toUpperCase(),
       year: year,
     };
-    console.log(user);
     try {
       const response = await studentSignUp(user);
-      console.log(response);
       if (response.status === 201) {
-        console.log("success");
+        setLoading(false);
+        setSignupSuccessful(true);
       } else {
+        setLoading(false);
         notify(response.data.message);
-        console.log("error");
       }
     } catch (error) {
       console.log(error);
@@ -231,235 +159,251 @@ export default function StudentSignup() {
       </div>
     );
   } else {
-    return (
-      <>
-        <ToastContainer />
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
-          <div className={classes.paper}>
-            <Avatar className={classes.avatar}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Student Sign up
-            </Typography>
-            <form className={classes.form} noValidate>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="name"
-                    label="Name"
-                    name="name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="email"
-                    label="Email Address"
-                    name="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="phone"
-                    label="Phone Number"
-                    name="phone"
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="reg_no"
-                    label="Registration Number"
-                    name="reg_no"
-                    value={reg_no}
-                    onChange={(event) => setReg(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    id="select-floor-warden"
-                    select
-                    label="Select Floor Warden"
-                    fullWidth
-                    variant="outlined"
-                    required
-                    value={floorWarden}
-                    onChange={(event) => setFloorWarden(event.target.value)}
-                  >
-                    {teacher_guardians.map((option) => (
-                      <MenuItem key={option._id} value={option._id}>
-                        {option.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    id="select-hostel"
-                    select
-                    label="Select Hostel"
-                    fullWidth
-                    variant="outlined"
-                    value={hostel}
-                    onChange={(event) => setHostel(event.target.value)}
-                    required
-                  >
-                    {hostels.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    name="block"
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="block"
-                    label="Block"
-                    value={block}
-                    onChange={(event) => setBlock(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    id="room"
-                    label="Room Number"
-                    name="room"
-                    value={room}
-                    onChange={(event) => setRoom(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    id="select-level"
-                    select
-                    label="Select Level"
-                    fullWidth
-                    variant="outlined"
-                    required
-                    value={level}
-                    onChange={(event) => setLevel(event.target.value)}
-                  >
-                    {levels.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="parents_phone"
-                    label="Parents Phone"
-                    id="parents_phone"
-                    value={parentPhone}
-                    onChange={(event) => setParentPhone(event.target.value)}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    id="select-dapartment"
-                    select
-                    label="Select Department"
-                    fullWidth
-                    variant="outlined"
-                    required
-                    value={department}
-                    onChange={(event) => setDepartment(event.target.value)}
-                  >
-                    {departments.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    id="select-year"
-                    select
-                    label="Select Year"
-                    fullWidth
-                    variant="outlined"
-                    required
-                    value={year}
-                    onChange={(event) => setYear(event.target.value)}
-                  >
-                    {years.map((option) => (
-                      <MenuItem key={option.value} value={option.value}>
-                        {option.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    variant="outlined"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="password"
-                    helperText="Must be 10 digits long"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                  />
-                </Grid>
-              </Grid>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-                onClick={handleSubmit}
-                disabled={!validateForm()}
-              >
-                Sign Up
-              </Button>
-              <Grid container justify="flex-end">
-                <Grid item>
-                  <Link href="/" variant="body2">
-                    Already have an account? Sign in
-                  </Link>
-                </Grid>
-              </Grid>
-            </form>
+    if (signUpSuccessful) {
+      return (
+        <Grid container alignItems="center" justify="center">
+          <div className={classes.successDiv}>
+            <Grid item xs={12}>
+              <CheckIcon className={classes.successIcon} />
+              <br />
+              <Typography variant="h4">
+                Signup successful, login to continue
+              </Typography>
+            </Grid>
           </div>
-          <Box mt={5}>
-            <Copyright />
-          </Box>
-        </Container>
-      </>
-    );
+        </Grid>
+      );
+    } else {
+      return (
+        <>
+          <ToastContainer />
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <div className={classes.paper}>
+              <Avatar className={classes.avatar}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Student Sign up
+              </Typography>
+              <form className={classes.form} noValidate>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="name"
+                      label="Name"
+                      name="name"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="email"
+                      label="Email Address"
+                      name="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="phone"
+                      label="Phone Number"
+                      name="phone"
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="reg_no"
+                      label="Registration Number"
+                      name="reg_no"
+                      value={reg_no}
+                      onChange={(event) => setReg(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      id="select-floor-warden"
+                      select
+                      label="Select Floor Warden"
+                      fullWidth
+                      variant="outlined"
+                      required
+                      value={floorWarden}
+                      onChange={(event) => setFloorWarden(event.target.value)}
+                    >
+                      {teacher_guardians.map((option) => (
+                        <MenuItem key={option._id} value={option._id}>
+                          {option.name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      id="select-hostel"
+                      select
+                      label="Select Hostel"
+                      fullWidth
+                      variant="outlined"
+                      value={hostel}
+                      onChange={(event) => setHostel(event.target.value)}
+                      required
+                    >
+                      {hostels.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      name="block"
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="block"
+                      label="Block"
+                      value={block}
+                      onChange={(event) => setBlock(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      id="room"
+                      label="Room Number"
+                      name="room"
+                      value={room}
+                      onChange={(event) => setRoom(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      id="select-level"
+                      select
+                      label="Select Level"
+                      fullWidth
+                      variant="outlined"
+                      required
+                      value={level}
+                      onChange={(event) => setLevel(event.target.value)}
+                    >
+                      {levels.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      name="parents_phone"
+                      label="Parents Phone"
+                      id="parents_phone"
+                      value={parentPhone}
+                      onChange={(event) => setParentPhone(event.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      id="select-dapartment"
+                      select
+                      label="Select Department"
+                      fullWidth
+                      variant="outlined"
+                      required
+                      value={department}
+                      onChange={(event) => setDepartment(event.target.value)}
+                    >
+                      {departments.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      id="select-year"
+                      select
+                      label="Select Year"
+                      fullWidth
+                      variant="outlined"
+                      required
+                      value={year}
+                      onChange={(event) => setYear(event.target.value)}
+                    >
+                      {years.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      variant="outlined"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Password"
+                      type="password"
+                      id="password"
+                      helperText="Must be 10 digits long"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                    />
+                  </Grid>
+                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  className={classes.submit}
+                  onClick={handleSubmit}
+                  disabled={!validateForm()}
+                >
+                  Sign Up
+                </Button>
+                <Grid container justify="flex-end">
+                  <Grid item>
+                    <Link href="/" variant="body2">
+                      Already have an account? Sign in
+                    </Link>
+                  </Grid>
+                </Grid>
+              </form>
+            </div>
+            <Box mt={5}>
+              <Copyright />
+            </Box>
+          </Container>
+        </>
+      );
+    }
   }
 }

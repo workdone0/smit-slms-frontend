@@ -1,7 +1,6 @@
 import axios from "axios";
 
 export const studentSignUp = async (user) => {
-  console.log(user.name);
   try {
     const response = await axios.post(
       "https://smit-slms-api.herokuapp.com/student/register",
