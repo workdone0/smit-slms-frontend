@@ -69,7 +69,7 @@ export default function StudentLogin() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [cookies, setCookie] = useCookies(["user"]);
+  const [cookies, setCookie] = useCookies(["student_user_token"]);
 
   const handleSubmit = async (event) => {
     setLoading(true);
@@ -77,7 +77,7 @@ export default function StudentLogin() {
     const response = await studentLogin(email, password);
     setLoading(false);
     if (response.status === 200) {
-      setCookie("user", response.data.token, {
+      setCookie("student_user_token", response.data.token, {
         path: "/",
         sameSite: "strict",
         maxAge: 604800,
