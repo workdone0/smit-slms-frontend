@@ -11,6 +11,9 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import { CircularProgress } from "@material-ui/core";
+import { useCookies } from "react-cookie";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Copyright from "../constants/copyright";
 import SmitImage from "../assets/images/smit.jpg";
@@ -61,100 +64,114 @@ const useStyles = makeStyles((theme) => ({
 
 export default function StudentLogin() {
   const classes = useStyles();
+  const notify = (message) => toast(message);
+
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [cookies, setCookie] = useCookies(["user"]);
 
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
     const response = await studentLogin(email, password);
     setLoading(false);
-    console.log(response);
+    if (response.status === 200) {
+      setCookie("user", response.data.token, {
+        path: "/",
+        sameSite: "strict",
+        maxAge: 604800,
+      });
+    } else {
+      notify(response.data.message);
+    }
   };
   return (
-    <Grid container component="main" className={classes.root}>
-      <CssBaseline />
-      <Grid item xs={false} sm={4} md={7} className={classes.image} />
+    <>
+      <ToastContainer />
+      <Grid container component="main" className={classes.root}>
+        <CssBaseline />
+        <Grid item xs={false} sm={4} md={7} className={classes.image} />
 
-      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-        {loading ? (
-          <div className={classes.loadingDiv}>
-            <CircularProgress />
-          </div>
-        ) : (
-          <div className={classes.paper}>
-            <Avatar className={classes.avatar}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Student Sign in
-            </Typography>
-            <form className={classes.form} noValidate>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-                className={classes.submit}
-              >
-                Sign In
-              </Button>
-              <Grid container>
-                <Grid item xs>
-                  <Link href="#" variant="body2">
-                    Forgot password?
-                  </Link>
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          {loading ? (
+            <div className={classes.loadingDiv}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <div className={classes.paper}>
+              <Avatar className={classes.avatar}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Student Sign in
+              </Typography>
+              <form className={classes.form} noValidate>
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+                <TextField
+                  variant="outlined"
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSubmit}
+                  className={classes.submit}
+                >
+                  Sign In
+                </Button>
+                <Grid container>
+                  <Grid item xs>
+                    <Link href="#" variant="body2">
+                      Forgot password?
+                    </Link>
+                  </Grid>
+                  <Grid item>
+                    <Link href="/studentsignup" variant="body2">
+                      {"Don't have an account? Sign Up"}
+                    </Link>
+                  </Grid>
                 </Grid>
-                <Grid item>
-                  <Link href="/studentsignup" variant="body2">
-                    {"Don't have an account? Sign Up"}
-                  </Link>
+                <Grid container>
+                  <Grid item className={classes.teacher_link_grid} xs={12}>
+                    <Button
+                      href="/teacherlogin"
+                      variant="contained"
+                      color="secondary"
+                    >
+                      Continue as a Teacher
+                    </Button>
+                  </Grid>
                 </Grid>
-              </Grid>
-              <Grid container>
-                <Grid item className={classes.teacher_link_grid} xs={12}>
-                  <Button
-                    href="/teacherlogin"
-                    variant="contained"
-                    color="secondary"
-                  >
-                    Continue as a Teacher
-                  </Button>
-                </Grid>
-              </Grid>
-              <Box mt={5}>
-                <Copyright />
-              </Box>
-            </form>
-          </div>
-        )}
+                <Box mt={5}>
+                  <Copyright />
+                </Box>
+              </form>
+            </div>
+          )}
+        </Grid>
       </Grid>
-    </Grid>
+    </>
   );
 }
