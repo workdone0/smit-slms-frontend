@@ -2,12 +2,14 @@ import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import { withCookies } from "react-cookie";
 import { CircularProgress } from "@material-ui/core";
+import { connect } from "react-redux";
 
 import Home from "./screens/home";
 import StudentSignUp from "./screens/student_signup";
-import TeacherLogIn from "./screens/teacher_login";
 import StudentsDashboard from "./screens/student_dashboard";
 import { tokenVerifyStudent } from "./api/student_token_verify";
+import { setCurrentUser } from "./redux/user/user.actions";
+import PrivateRoute from "./Private";
 
 class App extends React.Component {
   constructor(props) {
@@ -18,6 +20,7 @@ class App extends React.Component {
       teacher_user_token: cookies.get("teacher_user_token") || null,
       tokenVerified: false,
       redirectToStudentDashboard: false,
+      user: props.currentUser,
     };
   }
 
@@ -25,8 +28,10 @@ class App extends React.Component {
     if (this.state.student_user_token) {
       const response = await tokenVerifyStudent(this.state.student_user_token);
       if (response.status === 200) {
+        this.props.setCurrentUser(response.data.user);
         this.setState({
           redirectToStudentDashboard: true,
+          user: response.data.user,
         });
       } else {
         this.setState({
@@ -44,15 +49,16 @@ class App extends React.Component {
     if (this.state.redirectToStudentDashboard) {
       return (
         <Switch>
-          <Route path="/studentdashboard">
-            <StudentsDashboard />
-          </Route>
+          <PrivateRoute
+            path="/studentdashboard"
+            component={StudentsDashboard}
+            user={this.state.user}
+          />
           <Redirect to="/studentdashboard" />
         </Switch>
       );
     }
     if (this.state.tokenVerified) {
-      console.log("this part called");
       return (
         <React.Fragment>
           <Switch>
@@ -64,13 +70,11 @@ class App extends React.Component {
               <StudentSignUp />
             </Route>
 
-            <Route path="/teacherlogin">
-              <TeacherLogIn />
-            </Route>
-
-            <Route path="/studentdashboard">
-              <StudentsDashboard />
-            </Route>
+            <PrivateRoute
+              path="/studentdashboard"
+              component={StudentsDashboard}
+              user={this.state.user}
+            />
           </Switch>
         </React.Fragment>
       );
@@ -91,4 +95,11 @@ class App extends React.Component {
   }
 }
 
-export default withCookies(App);
+const mapDispatchToProps = (dispatch) => ({
+  setCurrentUser: (user) => dispatch(setCurrentUser(user)),
+});
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser,
+});
+
+export default withCookies(connect(mapStateToProps, mapDispatchToProps)(App));

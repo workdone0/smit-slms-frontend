@@ -14,6 +14,7 @@ import { CircularProgress } from "@material-ui/core";
 import { useCookies } from "react-cookie";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Redirect } from "react-router-dom";
 
 import Copyright from "../constants/copyright";
 import SmitImage from "../assets/images/smit.jpg";
@@ -62,15 +63,17 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function StudentLogin() {
+const StudentLogin = (props) => {
   const classes = useStyles();
   const notify = (message) => toast(message);
-
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // eslint-disable-next-line
   const [cookies, setCookie] = useCookies(["student_user_token"]);
-
+  const [redirectToStudentDashboard, setRedirectToStudentDashboard] = useState(
+    false
+  );
   const handleSubmit = async (event) => {
     setLoading(true);
     event.preventDefault();
@@ -82,10 +85,16 @@ export default function StudentLogin() {
         sameSite: "strict",
         maxAge: 604800,
       });
+      props.setUser(response.data.user);
+      setRedirectToStudentDashboard(true);
     } else {
       notify(response.data.message);
     }
   };
+
+  if (redirectToStudentDashboard) {
+    return <Redirect to="/studentdashboard" />;
+  }
   return (
     <>
       <ToastContainer />
@@ -155,11 +164,7 @@ export default function StudentLogin() {
                 </Grid>
                 <Grid container>
                   <Grid item className={classes.teacher_link_grid} xs={12}>
-                    <Button
-                      href="/teacherlogin"
-                      variant="contained"
-                      color="secondary"
-                    >
+                    <Button variant="contained" color="secondary">
                       Continue as a Teacher
                     </Button>
                   </Grid>
@@ -174,4 +179,6 @@ export default function StudentLogin() {
       </Grid>
     </>
   );
-}
+};
+
+export default StudentLogin;
