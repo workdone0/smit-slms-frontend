@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -6,9 +6,11 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import List from "@material-ui/core/List";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
+import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
+import Grid from "@material-ui/core/Grid";
+import { CircularProgress } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -19,8 +21,12 @@ import HomeIcon from "@material-ui/icons/Home";
 import DriveEtaIcon from "@material-ui/icons/DriveEta";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import { connect } from "react-redux";
 
-const drawerWidth = 240;
+import DashboardBar from "./dasboard_bar.component";
+import LeaveAccord from "./leave_accord.component";
+import { studentLeave } from "../api/student_leave.js";
+const drawerWidth = 350;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -82,12 +88,20 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  loadingDiv: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+  },
 }));
 
-export default function StudentDashboard() {
+const StudentDashboard = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
+  const [leaves, setLeaves] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -97,6 +111,32 @@ export default function StudentDashboard() {
     setOpen(false);
   };
 
+  const handleLogout = () => {
+    props.setCurrentUser(null);
+    props.cookies.remove("student_user_token", { sameSite: "strict" });
+  };
+
+  useEffect(() => {
+    const getFwList = async () => {
+      const data = await studentLeave(props.currentUser._id);
+      if (data.status === 200) {
+        setLeaves(data.data.leaves);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    };
+    getFwList();
+    // eslint-disable-next-line
+  }, []);
+
+  if (loading === true) {
+    return (
+      <div className={classes.loadingDiv}>
+        <CircularProgress />
+      </div>
+    );
+  }
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -155,11 +195,11 @@ export default function StudentDashboard() {
           </ListItem>
         </List>
         <List>
-          <ListItem button key="Approved Leaves">
+          <ListItem button key="Apply Leave">
             <ListItemIcon>
               <DriveEtaIcon />
             </ListItemIcon>
-            <ListItemText primary="Leaves" />
+            <ListItemText primary="Apply Leave" />
           </ListItem>
         </List>
         <Divider />
@@ -174,7 +214,7 @@ export default function StudentDashboard() {
         <List>
           <ListItem button key="Logout">
             <ListItemIcon>
-              <ExitToAppIcon />
+              <ExitToAppIcon onClick={handleLogout} />
             </ListItemIcon>
             <ListItemText primary="Logout" />
           </ListItem>
@@ -182,36 +222,33 @@ export default function StudentDashboard() {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-          dolor purus non enim praesent elementum facilisis leo vel. Risus at
-          ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-          quisque non tellus. Convallis convallis tellus id interdum velit
-          laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-          adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-          integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-          eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-          quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-          vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-          lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-          faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-          ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-          elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-          sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-          mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-          risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-          purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-          tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique
-          sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={false} sm={false} lg={12}>
+            <DashboardBar />
+            <Divider />
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h6">PAST LEAVES</Typography>
+            <br />
+            <Divider />
+          </Grid>
+          <Grid item xs={12}>
+            {leaves.length === 0 ? (
+              <Typography variant="h6">No Leaves to display</Typography>
+            ) : (
+              leaves.map((leave) => (
+                <LeaveAccord key={leave._id} leave={leave} />
+              ))
+            )}
+          </Grid>
+        </Grid>
       </main>
     </div>
   );
-}
+};
+
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser,
+});
+
+export default connect(mapStateToProps)(StudentDashboard);

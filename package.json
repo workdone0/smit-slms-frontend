@@ -17,8 +17,10 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
     "react-toastify": "^6.0.9",
+    "recharts": "^1.8.5",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
+    "victory": "^35.3.2",
     "web-vitals": "^0.2.4"
   },
   "scripts": {

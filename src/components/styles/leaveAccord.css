@@ -1,0 +1,14 @@
+@media only screen and (max-width: 768px) {
+  .status-div {
+    display: none !important;
+  }
+
+  .to-date {
+    text-align: left !important;
+    margin-top: 1% !important;
+  }
+}
+
+.to-date {
+  text-align: right;
+}

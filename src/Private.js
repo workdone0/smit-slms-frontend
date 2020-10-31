@@ -7,7 +7,6 @@ class PrivateRoute extends React.Component {
     const Component = this.props.component;
     const user = this.props.user;
     const currentUser = this.props.currentUser;
-    console.log(this.props);
     return user || currentUser ? (
       <Component />
     ) : (
