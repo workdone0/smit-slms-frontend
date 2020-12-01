@@ -117,6 +117,7 @@ const StudentDashboard = (props) => {
   const handleLogout = () => {
     props.setCurrentUser(null);
     props.cookies.remove("student_user_token", { sameSite: "strict" });
+    window.location.reload(false);
   };
 
   useEffect(() => {
