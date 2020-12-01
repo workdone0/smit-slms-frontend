@@ -7,6 +7,8 @@ import { connect } from "react-redux";
 import Home from "./screens/home";
 import StudentSignUp from "./screens/student_signup";
 import StudentsDashboard from "./screens/student_dashboard";
+import ApplyLeaveStudent from "./screens/apply_leave";
+
 import { tokenVerifyStudent } from "./api/student_token_verify";
 import { setCurrentUser } from "./redux/user/user.actions";
 import PrivateRoute from "./Private";
@@ -54,6 +56,11 @@ class App extends React.Component {
             component={StudentsDashboard}
             user={this.state.user}
           />
+          <PrivateRoute
+            path="/applyleave"
+            component={ApplyLeaveStudent}
+            user={this.state.user}
+          />
           <Redirect to="/studentdashboard" />
         </Switch>
       );
@@ -65,7 +72,11 @@ class App extends React.Component {
             <Route exact path="/">
               <Home cookies={this.props.cookies} />
             </Route>
-
+            <PrivateRoute
+              path="/applyleave"
+              component={ApplyLeaveStudent}
+              user={this.state.user}
+            />
             <Route path="/studentsignup">
               <StudentSignUp />
             </Route>

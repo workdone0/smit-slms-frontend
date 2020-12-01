@@ -102,6 +102,9 @@ const StudentDashboard = (props) => {
   const [open, setOpen] = React.useState(false);
   const [leaves, setLeaves] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [approvedCount, setApprovedCount] = React.useState(0);
+  const [declinedCount, setDeclinedCount] = React.useState(0);
+  const [pendingCount, setPendingCount] = React.useState(0);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -117,16 +120,32 @@ const StudentDashboard = (props) => {
   };
 
   useEffect(() => {
-    const getFwList = async () => {
+    const getLeaveList = async () => {
       const data = await studentLeave(props.currentUser._id);
       if (data.status === 200) {
         setLeaves(data.data.leaves);
+        var pending = 0;
+        var declined = 0;
+        var approved = 0;
+        data.data.leaves.map((leave) => {
+          if (leave.status.toUpperCase() === "PENDING") {
+            pending = pending + 1;
+          } else if (leave.status.toUpperCase() === "DECLINED") {
+            declined = declined + 1;
+          } else {
+            approved = approved + 1;
+          }
+          return null;
+        });
+        setPendingCount(pending);
+        setApprovedCount(approved);
+        setDeclinedCount(declined);
         setLoading(false);
       } else {
         setLoading(false);
       }
     };
-    getFwList();
+    getLeaveList();
     // eslint-disable-next-line
   }, []);
 
@@ -197,7 +216,9 @@ const StudentDashboard = (props) => {
         <List>
           <ListItem button key="Apply Leave">
             <ListItemIcon>
-              <DriveEtaIcon />
+              <a href="/applyleave">
+                <DriveEtaIcon />
+              </a>
             </ListItemIcon>
             <ListItemText primary="Apply Leave" />
           </ListItem>
@@ -224,7 +245,11 @@ const StudentDashboard = (props) => {
         <div className={classes.toolbar} />
         <Grid container spacing={3}>
           <Grid item xs={false} sm={false} lg={12}>
-            <DashboardBar />
+            <DashboardBar
+              approved={approvedCount}
+              declined={declinedCount}
+              pending={pendingCount}
+            />
             <Divider />
           </Grid>
           <Grid item xs={12}>

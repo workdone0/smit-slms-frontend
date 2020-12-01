@@ -4,11 +4,23 @@ import { BarChart, Bar, XAxis, YAxis } from "recharts";
 import "./styles/dashboardBar.css";
 
 class DashboardBar extends React.Component {
+  constructor(props) {
+    super(props);
+    console.log(props);
+    this.state = {
+      approved: props.approved,
+      declined: props.declined,
+      pending: props.pending,
+    };
+  }
   render() {
+    const { approved, declined, pending } = this.state;
+    const applied = approved + declined + pending;
     const data = [
-      { x: 1, y: 6, label: "Applied Leave" },
-      { x: 2, y: 2, label: "Approved Leave" },
-      { x: 3, y: 4, label: "Declined Leave" },
+      { x: 1, y: applied, label: "Applied Leave" },
+      { x: 2, y: approved, label: "Approved Leave" },
+      { x: 3, y: declined, label: "Declined Leave" },
+      { x: 3, y: pending, label: "Pending Leave" },
     ];
     return (
       <div className="chart-div-main">
